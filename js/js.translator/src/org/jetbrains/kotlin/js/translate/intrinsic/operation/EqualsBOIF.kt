@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.expressions.OperatorConventions
 import org.jetbrains.kotlin.types.isDynamic
-import org.jetbrains.kotlin.utils.identity
 
 object EqualsBOIF : BinaryOperationIntrinsicFactory {
     override fun getSupportTokens() = OperatorConventions.EQUALS_OPERATIONS!!
@@ -53,9 +52,9 @@ object EqualsBOIF : BinaryOperationIntrinsicFactory {
 
     private val eqSelector: OperatorSelector = { if (isNegatedOperation(it)) JsBinaryOperator.NEQ else JsBinaryOperator.EQ }
 
-    private val refEqIntrinsic = primitiveIntrinsic(identity(), identity(), refEqSelector)
+    private val refEqIntrinsic = binaryIntrinsic(operator = refEqSelector)
 
-    private val eqIntrinsic = primitiveIntrinsic(identity(), identity(), eqSelector)
+    private val eqIntrinsic = binaryIntrinsic(operator = eqSelector)
 
     private fun primitiveTypes(
         leftKotlinType: KotlinType, rightKotlinType: KotlinType
@@ -70,9 +69,9 @@ object EqualsBOIF : BinaryOperationIntrinsicFactory {
             }
         }
 
-        val eq = primitiveIntrinsic(coerceTo(leftKotlinType), coerceTo(rightKotlinType), eqSelector)
+        val eq = binaryIntrinsic(coerceTo(leftKotlinType), coerceTo(rightKotlinType), eqSelector)
 
-        val refEq = primitiveIntrinsic(coerceTo(leftKotlinType), coerceTo(rightKotlinType), refEqSelector)
+        val refEq = binaryIntrinsic(coerceTo(leftKotlinType), coerceTo(rightKotlinType), refEqSelector)
 
         // Used for number to number comparison
         val default = { leftNullable: Boolean, rightNullable: Boolean ->

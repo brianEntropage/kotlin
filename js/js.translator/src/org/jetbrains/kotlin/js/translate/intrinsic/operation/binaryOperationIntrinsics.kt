@@ -103,17 +103,10 @@ fun intrinsic(
     JsBinaryOperation(operator(expression), toLeft(left, right, context), toRight(left, right, context))
 }
 
-// toLeft(L) OP toRight(R)
-fun primitiveIntrinsic(
-    toLeft: (JsExpression) -> JsExpression,
-    toRight: (JsExpression) -> JsExpression,
-    operator: OperatorSelector = defaultOperatorSelector
-): BinaryOperationIntrinsic = intrinsic({ l, _, _ -> toLeft(l) }, { _, r, _ -> toRight(r) }, operator)
-
 // toLeft(L, C) OP toRight(R, C)
-fun primitiveIntrinsic(
-    toLeft: (JsExpression, TranslationContext) -> JsExpression,
-    toRight: (JsExpression, TranslationContext) -> JsExpression,
+fun binaryIntrinsic(
+    toLeft: (JsExpression, TranslationContext) -> JsExpression = { l, _ -> l },
+    toRight: (JsExpression, TranslationContext) -> JsExpression = { r, _ -> r },
     operator: OperatorSelector = defaultOperatorSelector
 ): BinaryOperationIntrinsic = intrinsic({ l, _, c -> toLeft(l, c) }, { _, r, c -> toRight(r, c) }, operator)
 

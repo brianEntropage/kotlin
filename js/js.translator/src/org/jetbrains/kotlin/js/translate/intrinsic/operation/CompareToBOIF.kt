@@ -32,14 +32,14 @@ object CompareToBOIF : BinaryOperationIntrinsicFactory {
     override fun getSupportTokens(): Set<KtSingleValueToken> = OperatorConventions.COMPARISON_OPERATIONS
 
     private val patterns = listOf(
-        pattern("Int|Short|Byte|Float|Double.compareTo(Long)") to primitiveIntrinsic(identity(), ::longToNumber),
-        pattern("Long.compareTo(Int|Short|Byte|Float|Double)") to primitiveIntrinsic(::longToNumber, identity()),
+        pattern("Int|Short|Byte|Float|Double.compareTo(Long)") to binaryIntrinsic(toRight = { r, _ -> longToNumber(r) }),
+        pattern("Long.compareTo(Int|Short|Byte|Float|Double)") to binaryIntrinsic(toLeft = { l, _ -> longToNumber(l) }),
         // L.compareTo(R) OP 0
         pattern("Long.compareTo(Long)") to intrinsic({ l, r, _ -> compareForObject(l, r) }, { _, _, _-> JsIntLiteral(0) })
     )
 
     override fun getIntrinsic(descriptor: FunctionDescriptor, leftType: KotlinType?, rightType: KotlinType?): BinaryOperationIntrinsic? {
-        if (descriptor.isDynamic()) return primitiveIntrinsic(identity(), identity())
+        if (descriptor.isDynamic()) return binaryIntrinsic()
 
         if (leftType == null || rightType == null || !KotlinBuiltIns.isBuiltIn(descriptor)) return null
 
@@ -47,7 +47,7 @@ object CompareToBOIF : BinaryOperationIntrinsicFactory {
 
         // Types may be nullable if properIeeeComparisons are switched off, e.g. fun foo(a: Double?) = a != null && a < 0.0
         return if (isPrimitiveTypeOrNullablePrimitiveType(leftType) && isPrimitiveTypeOrNullablePrimitiveType(rightType)) {
-            primitiveIntrinsic(coerceTo(leftType), coerceTo(rightType))
+            binaryIntrinsic(coerceTo(leftType), coerceTo(rightType))
         } else {
             // Kotlin.compareTo(L, R) OP 0
             intrinsic({ l, r, _ -> compareTo(l, r) }, { _, _, _ -> JsIntLiteral(0) })
